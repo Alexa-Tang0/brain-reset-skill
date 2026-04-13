@@ -21,85 +21,45 @@ This skill delivers exactly that: a micro-challenge that engages pattern recogni
 
 ## Session Flow
 
-### Goal: 10-minute flow warm-up
-5 challenges across 3 rounds of increasing difficulty. All challenges in a round are served as a batch — visible at once, answers submitted together. Minimal interruption between rounds. No scoring. Clean exit at the end.
+### Goal: render the brain reset hub widget
 
----
+When triggered, render the interactive brain reset hub inline using the visualizer tool. Do NOT run text challenges. Do NOT ask which game they want. Just render the widget immediately — the effortlessness of starting IS part of the reset.
 
-### 1. Opening (no setup required)
-Jump straight into Round 1. Do NOT ask what type they want. The effortlessness of starting IS part of the reset.
-
-Use a one-liner opener, e.g.:
+Use a one-liner before rendering, e.g.:
 - "here's your reset —"
+- "pick a game:"
 - "let's go:"
-- "brain check:"
 
 ---
 
-### 2. Round Structure
+### The hub widget
 
-**Round 1 — Warm up (Easy, ~3 mins)**
-Serve 2 challenges of different types. Easy difficulty. Present both at once, clearly labelled:
-```
-Round 1 of 3
+Render this HTML inline as a widget. It contains all 6 games with the updated descriptions below.
 
-  Challenge 1: [easy challenge]
+**Game card descriptions (functional, work-fog focused):**
 
-  Challenge 2: [easy challenge]
+| Game | Description |
+|------|-------------|
+| Sudoku | quiets decision fatigue |
+| Nonogram | rebuilds spatial focus |
+| Minesweeper | sharpens risk reasoning |
+| Sliding Puzzle | unsticks sequential thinking |
+| Math Chain | resets working memory |
+| Countdown | breaks creative blocks |
 
-Reply with your answers when ready.
-```
+Each game has multiple difficulty levels, a how-to, and a back button to return to the hub.
 
-**Round 2 — Build (Medium, ~3 mins)**
-Serve 2 challenges of different types. Medium difficulty. Same batch format:
-```
-Round 2 of 3
-
-  Challenge 3: [medium challenge]
-
-  Challenge 4: [medium challenge]
-
-Reply with your answers when ready.
-```
-
-**Round 3 — Focus (Hard, ~3 mins)**
-Serve 1 challenge. Hard difficulty. Full cognitive load — this is the peak of the session:
-```
-Round 3 of 3 — last one
-
-  Challenge 5: [hard challenge]
-
-Reply when ready.
-```
+Render the full hub widget code from `brain-reset-hub.html` in the skill's assets folder, or rebuild it inline using the visualizer tool with the game descriptions above applied to the cards.
 
 ---
 
-### 3. Between Rounds
-After the user submits answers for a round:
-- Reveal correct answers with a 1-line explanation each
-- One brief transition line (e.g., "nice — round 2 incoming")
-- Immediately serve the next round — no waiting, no asking
-
-Do NOT offer to stop between rounds. Keep the flow going.
-
----
-
-### 4. Responding to Answers (per challenge)
-- **Correct:** one word or emoji, brief why in 1 sentence
-- **Incorrect:** "not quite —" then correct answer + 1-sentence reason. No judgment.
-- **Skipped / blank:** reveal immediately, move on
-
-Keep feedback scannable. No walls of text.
-
----
-
-### 5. Closing
-After Round 3, close with a single warm line:
+### Closing
+After the user says they're done or feels better, close with a single warm line:
 - "you're back."
-- "that's your 10 mins — go get it."
+- "that's your reset — go get it."
 - "reset complete."
 
-Do NOT offer more challenges unless they ask. The session has a defined end.
+Do NOT offer more unless they ask.
 
 ---
 
