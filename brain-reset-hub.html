@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brain Reset Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f9f9f7;color:#1a1a1a;padding:1.5rem;}
+.hub-title{font-size:22px;font-weight:500;margin-bottom:4px;}
+.hub-sub{font-size:14px;color:#888;margin-bottom:1.5rem;}
+.game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem;}
+.game-card{background:#fff;border:1px solid #e8e8e6;border-radius:12px;padding:1rem;cursor:pointer;transition:border-color 0.15s,background 0.15s;}
+.game-card:hover{background:#f3f2fe;border-color:#afa9ec;}
+.game-name{font-size:13px;font-weight:500;}
+.game-tag{font-size:11px;color:#aaa;margin-top:2px;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#888;cursor:pointer;margin-bottom:1.25rem;}
+.back-btn:hover{color:#1a1a1a;}
+.game-frame{display:none;}
+.game-frame.active{display:block;}
+.how-to{background:#f3f2f0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;}
+.how-to-title{font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+.how-body{font-size:13px;color:#666;line-height:1.7;display:none;margin-top:8px;}
+.how-body.open{display:block;}
+.diff-row{display:flex;gap:8px;margin-bottom:1rem;}
+.diff-btn{padding:4px 12px;border-radius:8px;border:1px solid #e0e0dc;background:transparent;color:#888;font-size:12px;cursor:pointer;}
+.diff-btn.active{background:#eeedfe;color:#534ab7;border-color:#afa9ec;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.game-title{font-size:18px;font-weight:500;}
+.meta{font-size:13px;color:#888;}
+.status{font-size:13px;color:#888;min-height:20px;margin-bottom:1rem;}
+.status.win{color:#0f6e56;font-weight:500;}
+.status.lose{color:#a32d2d;font-weight:500;}
+.actions{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap;}
+.btn{padding:8px 16px;border-radius:8px;border:1px solid #ddd;background:transparent;color:#1a1a1a;font-size:13px;cursor:pointer;}
+.btn:hover{background:#f3f2f0;}
+.btn.primary{background:#534ab7;color:#eeedfe;border-color:#534ab7;}
+.btn.primary:hover{background:#3c3489;}
+.btn:disabled{opacity:0.4;cursor:default;}
+.nonogram-board{display:inline-block;margin-bottom:1rem;}
+.nonogram{border-collapse:collapse;}
+.clue-cell{padding:2px 5px;text-align:center;font-size:12px;font-weight:500;color:#888;min-width:28px;height:28px;vertical-align:bottom;}
+.clue-cell.row-clue{text-align:right;padding-right:8px;vertical-align:middle;white-space:nowrap;}
+.grid-cell{width:28px;height:28px;border:1px solid #e8e8e6;cursor:pointer;}
+.grid-cell:hover{background:#f3f2f0;}
+.grid-cell.filled{background:#534ab7;}
+.grid-cell.marked::after{content:"×";display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:14px;color:#aaa;}
+.grid-cell.correct{background:#1d9e75;}
+.grid-cell.error{background:#e24b4a;}
+.corner{background:transparent;border:none;}
+.ms-board{display:inline-grid;gap:2px;margin-bottom:1rem;}
+.ms-cell{width:28px;height:28px;border-radius:4px;border:1px solid #e8e8e6;background:#f3f2f0;cursor:pointer;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;user-select:none;}
+.ms-cell:hover{background:#fff;}
+.ms-cell.revealed{background:#fff;cursor:default;}
+.ms-cell.flagged{background:#faeeda;border-color:#ef9f27;}
+.ms-cell.mine-hit{background:#fcebeb;border-color:#e24b4a;}
+.n1{color:#185fa5;}.n2{color:#3b6d11;}.n3{color:#a32d2d;}.n4{color:#26215c;}.n5{color:#993c1d;}.n6{color:#0f6e56;}
+.sp-board{display:inline-grid;gap:6px;padding:8px;background:#f3f2f0;border-radius:12px;margin-bottom:1rem;}
+.sp-tile{border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;cursor:pointer;user-select:none;border:1px solid #e8e8e6;}
+.sp-tile.filled{background:#eeedfe;color:#3c3489;border-color:#afa9ec;}
+.sp-tile.filled:hover{background:#cecbf6;}
+.sp-tile.empty{background:transparent;border-color:transparent;cursor:default;}
+.sp-tile.correct{background:#e1f5ee;color:#085041;border-color:#5dcaa5;}
+.lo-board{display:inline-grid;gap:6px;margin-bottom:1rem;}
+.lo-light{border-radius:8px;cursor:pointer;border:1px solid #e8e8e6;}
+.lo-light.on{background:#fac775;border-color:#ba7517;}
+.lo-light.off{background:#f3f2f0;}
+.chain-card{background:#fff;border:1px solid #e8e8e6;border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.step-start{font-size:13px;color:#888;margin-bottom:4px;}
+.step{display:flex;align-items:center;gap:12px;}
+.step-op{font-family:monospace;font-size:18px;color:#888;width:24px;}
+.step-num{font-family:monospace;font-size:18px;font-weight:500;}
+.step-line{height:1px;background:#e8e8e6;margin:6px 0;}
+.result-row{display:flex;align-items:center;gap:12px;margin-top:6px;}
+.eq{font-family:monospace;font-size:18px;color:#888;width:24px;}
+.ans-input{font-family:monospace;font-size:18px;font-weight:500;width:100px;padding:6px 10px;border-radius:8px;border:1px solid #ddd;text-align:center;}
+.ans-input:focus{outline:none;border-color:#7f77dd;}
+.feedback{font-size:13px;margin-top:1rem;padding:10px 14px;border-radius:8px;display:none;line-height:1.6;}
+.feedback.correct{background:#e1f5ee;color:#0f6e56;}
+.feedback.incorrect{background:#faece7;color:#993c1d;}
+.streak{font-size:13px;color:#888;}
+.streak span{color:#534ab7;font-weight:500;}
+.cd-target-box{background:#f3f2f0;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem;text-align:center;}
+.cd-target-label{font-size:12px;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;}
+.cd-target-num{font-size:48px;font-weight:500;color:#534ab7;font-family:monospace;}
+.cd-nums-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;}
+.cd-tile{width:52px;height:52px;border-radius:8px;background:#eeedfe;border:1px solid #afa9ec;color:#3c3489;font-size:18px;font-weight:500;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:monospace;}
+.cd-tile:hover{background:#cecbf6;}
+.cd-tile.used{background:#f3f2f0;color:#aaa;border-color:#e8e8e6;cursor:default;}
+.cd-expr{background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:15px;min-height:44px;margin-bottom:1rem;display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+.cd-tok{padding:2px 8px;border-radius:4px;background:#f3f2f0;border:1px solid #e8e8e6;font-size:13px;}
+.cd-tok.nt{background:#eeedfe;color:#3c3489;border-color:#afa9ec;}
+.ops-row{display:flex;gap:8px;margin-bottom:1rem;}
+.op-btn{width:44px;height:44px;border-radius:8px;border:1px solid #ddd;background:transparent;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.op-btn:hover{background:#f3f2f0;}
+.op-btn.active{background:#534ab7;color:#eeedfe;border-color:#534ab7;}
+.res-badge{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;display:inline-block;margin-bottom:1rem;}
+.res-badge.exact{background:#e1f5ee;color:#0f6e56;}
+.res-badge.close{background:#faeeda;color:#633806;}
+.res-badge.wrong{background:#faece7;color:#993c1d;}
+.sdk-table td{width:34px;height:34px;text-align:center;vertical-align:middle;font-size:16px;font-weight:500;border:1px solid #e8e8e6;}
+</style>
+</head>
+<body>
+<div id="hub">
+  <div id="home-view">
+    <div class="hub-title">brain reset</div>
+    <div class="hub-sub">pick a game — clear your head in 10 mins</div>
+    <div class="game-grid">
+      <div class="game-card" onclick="openGame('sudoku')"><div class="game-name">Sudoku</div><div class="game-tag">logical deduction</div></div>
+      <div class="game-card" onclick="openGame('nonogram')"><div class="game-name">Nonogram</div><div class="game-tag">spatial patterns</div></div>
+      <div class="game-card" onclick="openGame('minesweeper')"><div class="game-name">Minesweeper</div><div class="game-tag">probabilistic reasoning</div></div>
+      <div class="game-card" onclick="openGame('sliding')"><div class="game-name">Sliding Puzzle</div><div class="game-tag">spatial planning</div></div>
+      <div class="game-card" onclick="openGame('mathchain')"><div class="game-name">Math Chain</div><div class="game-tag">working memory</div></div>
+      <div class="game-card" onclick="openGame('countdown')"><div class="game-name">Countdown</div><div class="game-tag">creative numbers</div></div>
+    </div>
+  </div>
+
+  <div class="game-frame" id="frame-sudoku">
+    <div class="back-btn" onclick="goHome()">← back</div>
+    <div class="top-bar"><div class="game-title">Sudoku</div></div>
+    <div class="how-to"><div class="how-to-title" onclick="toggleHow('sdk-how')"><span>how to play</span><span id="sdk-how-arrow" style="font-size:11px;color:#aaa;">show</span></div><div class="how-body" id="sdk-how">fill the 9×9 grid so every row, column, and 3×3 box contains digits 1–9 with no repeats. click a cell then type a number.</div></div>
+    <div class="diff-row"><button class="diff-btn active" onclick="sdkSetDiff('easy',this)">easy</button><button class="diff-btn" onclick="sdkSetDiff('medium',this)">medium</button></div>
+    <div class="status" id="sdk-status">fill in the grid</div>
+    <div id="sdk-board" style="margin-bottom:1rem;"></div>
+    <div class="actions"><button class="btn primary" onclick="sdkNewGame()">new puzzle</button><button class="btn" onclick="sdkReveal()">reveal</button></div>
+  </div>
+
+  <div class="game-frame" id="frame-nonogram">
+    <div class="back-btn" onclick="goHome()">← back</div>
+    <div class="top-bar"><div class="game-title">Nonogram</div><div class="meta" id="nono-moves">0 moves</div></div>
+    <div class="how-to"><div class="how-to-title" onclick="toggleHow('nono-how')"><span>how to play</span><span id="nono-how-arrow" style="font-size:11px;color:#aaa;">show</span></div><div class="how-body" id="nono-how">fill cells to match the clues for each row and column. left-click to fill, right-click to mark empty.</div></div>
+    <div class="diff-row"><button class="diff-btn active" onclick="nonoSetDiff(0,this)">5×5</button><button class="diff-btn" onclick="nonoSetDiff(1,this)">8×8</button></div>
+    <div class="status" id="nono-status">left-click fill · right-click mark</div>
+    <div class="nonogram-board"><table class="nonogram" id="nono-board"></table></div>
+    <div class="actions"><button class="btn primary" onclick="nonoNew()">new puzzle</button><button class="btn" onclick="nonoCheck()">check</button><button class="btn" onclick="nonoReveal()">reveal</button></div>
+  </div>
+
+  <div class="game-frame" id="frame-minesweeper">
+    <div class="back-btn" onclick="goHome()">← back</div>
+    <div class="top-bar"><div class="game-title">Minesweeper</div><div class="meta" style="display:flex;gap:12px;"><span id="ms-mines">mines:10</span><span id="ms-flags">flags:0</span><span id="ms-timer">0s</span></div></div>
+    <div class="how-to"><div class="how-to-title" onclick="toggleHow('ms-how')"><span>how to play</span><span id="ms-how-arrow" style="font-size:11px;color:#aaa;">show</span></div><div class="how-body" id="ms-how">click to reveal. numbers show adjacent mines. right-click to flag. reveal all safe cells to win.</div></div>
+    <div class="diff-row"><button class="diff-btn active" onclick="msSetDiff(0,this)">easy 8×8</button><button class="diff-btn" onclick="msSetDiff(1,this)">medium 12×12</button></div>
+    <div class="status" id="ms-status">click any cell to start</div>
+    <div class="ms-board" id="ms-board"></div>
+    <div class="actions"><button class="btn primary" onclick="msNew()">new game</button></div>
+  </div>
+
+  <div class="game-frame" id="frame-sliding">
+    <div class="back-btn" onclick="goHome()">← back</div>
+    <div class="top-bar"><div class="game-title">Sliding Puzzle</div><div class="meta" id="sp-moves">0 moves</div></div>
+    <div class="how-to"><div class="how-to-title" onclick="toggleHow('sp-how')"><span>how to play</span><span id="sp-how-arrow" style="font-size:11px;color:#aaa;">show</span></div><div class="how-body" id="sp-how">click tiles next to the empty space to slide them. arrange in order left to right, top to bottom. green = correct position.</div></div>
+    <div class="diff-row"><button class="diff-btn active" onclick="spSetDiff(3,this)">3×3</button><button class="diff-btn" onclick="spSetDiff(4,this)">4×4</button><button class="diff-btn" onclick="spSetDiff(5,this)">5×5</button></div>
+    <div class="status" id="sp-status">slide tiles into order</div>
+    <div class="sp-board" id="sp-board"></div>
+    <div class="actions"><button class="btn primary" onclick="spNew()">new puzzle</button></div>
+  </div>
+
+  <div class="game-frame" id="frame-mathchain">
+    <div class="back-btn" onclick="goHome()">← back</div>
+    <div class="top-bar"><div class="game-title">Math Chain</div><div class="streak">streak: <span id="mc-streak">0</span></div></div>
+    <div class="how-to"><div class="how-to-title" onclick="toggleHow('mc-how')"><span>how to play</span><span id="mc-how-arrow" style="font-size:11px;color:#aaa;">show</span></div><div class="how-body" id="mc-how">follow the arithmetic chain in your head. apply each operation from the starting number. type your final answer.</div></div>
+    <div class="diff-row"><button class="diff-btn active" onclick="mcSetDiff('easy',this)">easy</button><button class="diff-btn" onclick="mcSetDiff('medium',this)">medium</button><button class="diff-btn" onclick="mcSetDiff('hard',this)">hard</button></div>
+    <div class="chain-card"><div id="mc-steps"></div><div class="step-line"></div><div class="result-row"><div class="eq">=</div><input class="ans-input" type="number" id="mc-ans" placeholder="?" onkeydown="if(event.key==='Enter')mcCheck()"></div><div class="feedback" id="mc-fb"></div><div class="actions"><button class="btn primary" onclick="mcCheck()">check</button><button class="btn" onclick="mcNew()">new chain</button></div></div>
+  </div>
+
+  <div class="game-frame" id="frame-countdown">
+    <div class="back-btn" onclick="goHome()">← back</div>
+    <div class="top-bar"><div class="game-title">Countdown</div></div>
+    <div class="how-to"><div class="how-to-title" onclick="toggleHow('cd-how')"><span>how to play</span><span id="cd-how-arrow" style="font-size:11px;color:#aaa;">show</span></div><div class="how-body" id="cd-how">use any of the 6 numbers with +, −, ×, ÷ to reach the target. each number once only. results must stay positive whole numbers.</div></div>
+    <div class="cd-target-box"><div class="cd-target-label">target</div><div class="cd-target-num" id="cd-target">—</div></div>
+    <div class="cd-nums-row" id="cd-nums"></div>
+    <div class="cd-expr" id="cd-expr"><span style="color:#aaa;font-size:14px;">click a number to start...</span></div>
+    <div class="ops-row"><button class="op-btn" id="cd-op-plus" onclick="cdSelectOp('+')">+</button><button class="op-btn" id="cd-op-minus" onclick="cdSelectOp('−')">−</button><button class="op-btn" id="cd-op-times" onclick="cdSelectOp('×')">×</button><button class="op-btn" id="cd-op-div" onclick="cdSelectOp('÷')">÷</button></div>
+    <div id="cd-badge"></div>
+    <div class="actions"><button class="btn primary" onclick="cdCheck()">check</button><button class="btn" onclick="cdClear()">clear</button><button class="btn" onclick="cdNew()">new puzzle</button></div>
+  </div>
+</div>
+
+<script>
+function openGame(id){document.getElementById('home-view').style.display='none';document.querySelectorAll('.game-frame').forEach(f=>f.classList.remove('active'));document.getElementById('frame-'+id).classList.add('active');const inits={sudoku:sdkNewGame,nonogram:nonoNew,minesweeper:msNew,sliding:spNew,mathchain:mcNew,countdown:cdNew};if(inits[id])inits[id]();}
+function goHome(){document.getElementById('home-view').style.display='block';document.querySelectorAll('.game-frame').forEach(f=>f.classList.remove('active'));}
+function toggleHow(id){const b=document.getElementById(id);const a=document.getElementById(id+'-arrow');b.classList.toggle('open');a.textContent=b.classList.contains('open')?'hide':'show';}
+const SDK_EASY=[[5,3,0,0,7,0,0,0,0],[6,0,0,1,9,5,0,0,0],[0,9,8,0,0,0,0,6,0],[8,0,0,0,6,0,0,0,3],[4,0,0,8,0,3,0,0,1],[7,0,0,0,2,0,0,0,6],[0,6,0,0,0,0,2,8,0],[0,0,0,4,1,9,0,0,5],[0,0,0,0,8,0,0,7,9]];
+const SDK_SOL=[[5,3,4,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],[8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],[9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]];
+let sdkGrid=[],sdkFixed=[],sdkSelected=null;
+function sdkSetDiff(d,el){document.querySelectorAll('#frame-sudoku .diff-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');sdkNewGame();}
+function sdkNewGame(){sdkGrid=SDK_EASY.map(r=>[...r]);sdkFixed=SDK_EASY.map(r=>r.map(v=>v!==0));sdkSelected=null;document.getElementById('sdk-status').textContent='fill in the grid';document.getElementById('sdk-status').className='status';sdkRender();}
+function sdkRender(){const b=document.getElementById('sdk-board');b.innerHTML='';const tbl=document.createElement('table');tbl.style.borderCollapse='collapse';sdkGrid.forEach((row,r)=>{const tr=document.createElement('tr');row.forEach((val,c)=>{const td=document.createElement('td');td.className='sdk-table';td.style.width='34px';td.style.height='34px';td.style.textAlign='center';td.style.verticalAlign='middle';td.style.fontSize='16px';td.style.fontWeight='500';td.style.border='1px solid #e8e8e6';td.style.cursor=sdkFixed[r][c]?'default':'pointer';if(c%3===2&&c<8)td.style.borderRight='2px solid #999';if(r%3===2&&r<8)td.style.borderBottom='2px solid #999';td.style.background=sdkFixed[r][c]?'#f3f2f0':'#fff';td.style.color=sdkFixed[r][c]?'#1a1a1a':'#534ab7';if(sdkSelected&&sdkSelected[0]===r&&sdkSelected[1]===c)td.style.background='#eeedfe';td.textContent=val||'';td.dataset.r=r;td.dataset.c=c;if(!sdkFixed[r][c])td.addEventListener('click',()=>{sdkSelected=[r,c];sdkRender();});tr.appendChild(td);});tbl.appendChild(tr);});b.appendChild(tbl);document.onkeydown=e=>{if(!sdkSelected)return;const[r,c]=sdkSelected;if(sdkFixed[r][c])return;if(e.key>='1'&&e.key<='9'){sdkGrid[r][c]=+e.key;}if(e.key==='Backspace'||e.key==='Delete')sdkGrid[r][c]=0;sdkRender();if(sdkGrid.flat().every(v=>v!==0)){let ok=true;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(sdkGrid[r][c]!==SDK_SOL[r][c])ok=false;if(ok){document.getElementById('sdk-status').textContent='solved!';document.getElementById('sdk-status').className='status win';}}};}
+function sdkReveal(){sdkGrid=SDK_SOL.map(r=>[...r]);sdkRender();document.getElementById('sdk-status').textContent='solution revealed';}
+const NONO_PUZZLES={5:[{solution:[[0,1,1,0,0],[1,1,1,1,0],[1,1,1,1,1],[0,1,1,1,0],[0,0,1,0,0]]},{solution:[[1,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1]]},{solution:[[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1],[0,1,1,1,0],[0,0,1,0,0]]}],8:[{solution:[[0,0,0,1,1,0,0,0],[0,0,1,0,0,1,0,0],[0,1,0,0,0,0,1,0],[1,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,1],[0,1,0,0,0,0,1,0],[0,0,1,0,0,1,0,0],[0,0,0,1,1,0,0,0]]},{solution:[[1,0,0,0,0,0,0,1],[0,1,0,0,0,0,1,0],[0,0,1,0,0,1,0,0],[0,0,0,1,1,0,0,0],[0,0,0,1,1,0,0,0],[0,0,1,0,0,1,0,0],[0,1,0,0,0,0,1,0],[1,0,0,0,0,0,0,1]]}]};
+const DIFF_KEYS=[5,8];
+let nonoSize=5,nonoPuzzle=null,nonoGrid=[],nonoMoves=0;
+function nonoSetDiff(i,el){document.querySelectorAll('#frame-nonogram .diff-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');nonoSize=DIFF_KEYS[i];nonoNew();}
+function nonoGetClues(lines){return lines.map(l=>{const c=[];let n=0;l.forEach(v=>{if(v)n++;else if(n){c.push(n);n=0;}});if(n)c.push(n);return c.length?c:[0];});}
+function nonoNew(){const pool=NONO_PUZZLES[nonoSize];nonoPuzzle=pool[Math.floor(Math.random()*pool.length)];nonoGrid=Array.from({length:nonoSize},()=>Array(nonoSize).fill(0));nonoMoves=0;document.getElementById('nono-moves').textContent='0 moves';document.getElementById('nono-status').textContent='left-click fill · right-click mark';document.getElementById('nono-status').className='status';nonoBuild();}
+function nonoBuild(){const sol=nonoPuzzle.solution;const rowC=nonoGetClues(sol);const cols=Array.from({length:nonoSize},(_,c)=>sol.map(r=>r[c]));const colC=nonoGetClues(cols);const maxC=Math.max(...colC.map(c=>c.length));const tbl=document.getElementById('nono-board');tbl.innerHTML='';for(let ci=0;ci<maxC;ci++){const tr=document.createElement('tr');const co=document.createElement('td');co.className='corner';tr.appendChild(co);for(let c=0;c<nonoSize;c++){const td=document.createElement('td');td.className='clue-cell';const cl=colC[c];const off=maxC-cl.length;td.textContent=(ci>=off)?cl[ci-off]:'';tr.appendChild(td);}tbl.appendChild(tr);}for(let r=0;r<nonoSize;r++){const tr=document.createElement('tr');const rc=document.createElement('td');rc.className='clue-cell row-clue';rc.textContent=rowC[r].join(' ');tr.appendChild(rc);for(let c=0;c<nonoSize;c++){const td=document.createElement('td');td.className='grid-cell';td.dataset.r=r;td.dataset.c=c;td.addEventListener('click',nonoClick);td.addEventListener('contextmenu',nonoRight);tr.appendChild(td);}tbl.appendChild(tr);}}
+function nonoClick(e){e.preventDefault();const r=+e.currentTarget.dataset.r,c=+e.currentTarget.dataset.c;nonoGrid[r][c]=nonoGrid[r][c]===1?0:1;nonoRenderCell(r,c);nonoMoves++;document.getElementById('nono-moves').textContent=nonoMoves+' moves';}
+function nonoRight(e){e.preventDefault();const r=+e.currentTarget.dataset.r,c=+e.currentTarget.dataset.c;nonoGrid[r][c]=nonoGrid[r][c]===2?0:2;nonoRenderCell(r,c);}
+function nonoRenderCell(r,c){const td=document.querySelector(`#nono-board .grid-cell[data-r="${r}"][data-c="${c}"]`);if(!td)return;td.className='grid-cell';if(nonoGrid[r][c]===1)td.classList.add('filled');else if(nonoGrid[r][c]===2)td.classList.add('marked');}
+function nonoCheck(){const sol=nonoPuzzle.solution;let ok=true;for(let r=0;r<nonoSize;r++)for(let c=0;c<nonoSize;c++){const td=document.querySelector(`#nono-board .grid-cell[data-r="${r}"][data-c="${c}"]`);if(nonoGrid[r][c]===1&&sol[r][c])td.classList.add('correct');else if(nonoGrid[r][c]===1&&!sol[r][c]){td.classList.add('error');ok=false;}}if(ok){document.getElementById('nono-status').textContent='solved!';document.getElementById('nono-status').className='status win';}else{setTimeout(()=>{document.querySelectorAll('#nono-board .grid-cell.correct').forEach(t=>{t.classList.remove('correct');t.classList.add('filled');});document.querySelectorAll('#nono-board .grid-cell.error').forEach(t=>t.classList.remove('error'));document.getElementById('nono-status').textContent='left-click fill · right-click mark';},1500);}}
+function nonoReveal(){const sol=nonoPuzzle.solution;for(let r=0;r<nonoSize;r++)for(let c=0;c<nonoSize;c++){nonoGrid[r][c]=sol[r][c]?1:0;nonoRenderCell(r,c);}document.getElementById('nono-status').textContent='solution revealed';}
+const MS_CFG=[{rows:8,cols:8,mines:10},{rows:12,cols:12,mines:25}];
+let msCfg=MS_CFG[0],msGrid=[],msRevealed=[],msFlagged=[],msOver=false,msFirstClick=true,msTimer=null,msElapsed=0;
+function msSetDiff(i,el){document.querySelectorAll('#frame-minesweeper .diff-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');msCfg=MS_CFG[i];msNew();}
+function msNew(){clearInterval(msTimer);msElapsed=0;msOver=false;msFirstClick=true;msGrid=Array.from({length:msCfg.rows},()=>Array(msCfg.cols).fill(0));msRevealed=Array.from({length:msCfg.rows},()=>Array(msCfg.cols).fill(false));msFlagged=Array.from({length:msCfg.rows},()=>Array(msCfg.cols).fill(false));document.getElementById('ms-mines').textContent='mines:'+msCfg.mines;document.getElementById('ms-flags').textContent='flags:0';document.getElementById('ms-timer').textContent='0s';document.getElementById('ms-status').textContent='click any cell to start';document.getElementById('ms-status').className='status';msBuild();}
+function msPlaceMines(sr,sc){let p=0;while(p<msCfg.mines){const r=Math.floor(Math.random()*msCfg.rows),c=Math.floor(Math.random()*msCfg.cols);if(msGrid[r][c]===-1)continue;if(Math.abs(r-sr)<=1&&Math.abs(c-sc)<=1)continue;msGrid[r][c]=-1;p++;}for(let r=0;r<msCfg.rows;r++)for(let c=0;c<msCfg.cols;c++){if(msGrid[r][c]===-1)continue;let cnt=0;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<msCfg.rows&&nc>=0&&nc<msCfg.cols&&msGrid[nr][nc]===-1)cnt++;}msGrid[r][c]=cnt;}}
+function msBuild(){const b=document.getElementById('ms-board');b.style.gridTemplateColumns=`repeat(${msCfg.cols},28px)`;b.innerHTML='';for(let r=0;r<msCfg.rows;r++)for(let c=0;c<msCfg.cols;c++){const d=document.createElement('div');d.className='ms-cell';d.dataset.r=r;d.dataset.c=c;d.addEventListener('click',msClick);d.addEventListener('contextmenu',msFlag);b.appendChild(d);}}
+function msGetCell(r,c){return document.querySelector(`#ms-board .ms-cell[data-r="${r}"][data-c="${c}"]`);}
+function msClick(e){if(msOver)return;const r=+e.currentTarget.dataset.r,c=+e.currentTarget.dataset.c;if(msFlagged[r][c]||msRevealed[r][c])return;if(msFirstClick){msFirstClick=false;msPlaceMines(r,c);msTimer=setInterval(()=>{msElapsed++;document.getElementById('ms-timer').textContent=msElapsed+'s';},1000);}if(msGrid[r][c]===-1){msGameOver(r,c);return;}msFlood(r,c);msCheckWin();}
+function msFlag(e){e.preventDefault();if(msOver)return;const r=+e.currentTarget.dataset.r,c=+e.currentTarget.dataset.c;if(msRevealed[r][c])return;msFlagged[r][c]=!msFlagged[r][c];const d=msGetCell(r,c);d.className='ms-cell'+(msFlagged[r][c]?' flagged':'');d.textContent=msFlagged[r][c]?'F':'';document.getElementById('ms-flags').textContent='flags:'+msFlagged.flat().filter(Boolean).length;}
+function msFlood(r,c){if(r<0||r>=msCfg.rows||c<0||c>=msCfg.cols||msRevealed[r][c]||msFlagged[r][c])return;msRevealed[r][c]=true;const d=msGetCell(r,c);d.className='ms-cell revealed';d.textContent=msGrid[r][c]>0?msGrid[r][c]:'';if(msGrid[r][c]>0)d.classList.add('n'+msGrid[r][c]);if(msGrid[r][c]===0)for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)msFlood(r+dr,c+dc);}
+function msGameOver(hr,hc){msOver=true;clearInterval(msTimer);for(let r=0;r<msCfg.rows;r++)for(let c=0;c<msCfg.cols;c++)if(msGrid[r][c]===-1){const d=msGetCell(r,c);d.className=(r===hr&&c===hc)?'ms-cell mine-hit':'ms-cell';d.textContent='*';}document.getElementById('ms-status').textContent='hit a mine — game over';document.getElementById('ms-status').className='status lose';}
+function msCheckWin(){let safe=0,rev=0;for(let r=0;r<msCfg.rows;r++)for(let c=0;c<msCfg.cols;c++){if(msGrid[r][c]!==-1)safe++;if(msRevealed[r][c])rev++;}if(rev===safe){msOver=true;clearInterval(msTimer);document.getElementById('ms-status').textContent='cleared! — '+msElapsed+'s';document.getElementById('ms-status').className='status win';}}
+let spSize=3,spTiles=[],spEmpty=0,spMoves=0,spWon=false;
+function spSetDiff(s,el){document.querySelectorAll('#frame-sliding .diff-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');spSize=s;spNew();}
+function spNew(){spMoves=0;spWon=false;document.getElementById('sp-moves').textContent='0 moves';document.getElementById('sp-status').textContent='slide tiles into order';document.getElementById('sp-status').className='status';const n=spSize*spSize;spTiles=Array.from({length:n},(_,i)=>i);do{spShuffle();}while(!spSolvable()||spSolved());spEmpty=spTiles.indexOf(0);spBuild();spRender();}
+function spShuffle(){for(let i=spTiles.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[spTiles[i],spTiles[j]]=[spTiles[j],spTiles[i]];}}
+function spSolvable(){let inv=0;const f=spTiles.filter(v=>v!==0);for(let i=0;i<f.length;i++)for(let j=i+1;j<f.length;j++)if(f[i]>f[j])inv++;const er=Math.floor(spTiles.indexOf(0)/spSize);const efb=spSize-er;if(spSize%2===1)return inv%2===0;return efb%2===0?inv%2===1:inv%2===0;}
+function spSolved(){for(let i=0;i<spTiles.length-1;i++)if(spTiles[i]!==i+1)return false;return spTiles[spTiles.length-1]===0;}
+function spBuild(){const b=document.getElementById('sp-board');const cs=spSize===3?80:spSize===4?65:52;b.style.gridTemplateColumns=`repeat(${spSize},${cs}px)`;b.innerHTML='';for(let i=0;i<spSize*spSize;i++){const d=document.createElement('div');d.className='sp-tile';d.style.width=cs+'px';d.style.height=cs+'px';d.style.fontSize=(spSize===3?22:spSize===4?18:15)+'px';d.dataset.i=i;d.addEventListener('click',spClick);b.appendChild(d);}}
+function spRender(){document.querySelectorAll('.sp-tile').forEach((d,i)=>{const v=spTiles[i];if(!v){d.className='sp-tile empty';d.textContent='';}else{d.className='sp-tile '+(v===i+1?'correct':'filled');d.textContent=v;}});}
+function spClick(e){if(spWon)return;const i=+e.currentTarget.dataset.i;const r=Math.floor(i/spSize),c=i%spSize,er=Math.floor(spEmpty/spSize),ec=spEmpty%spSize;if(!((r===er&&Math.abs(c-ec)===1)||(c===ec&&Math.abs(r-er)===1)))return;[spTiles[i],spTiles[spEmpty]]=[spTiles[spEmpty],spTiles[i]];spEmpty=i;spMoves++;document.getElementById('sp-moves').textContent=spMoves+' moves';spRender();if(spSolved()){spWon=true;document.getElementById('sp-status').textContent='solved in '+spMoves+' moves!';document.getElementById('sp-status').className='status win';}}
+const MC_CFG={easy:{start:[2,20],steps:4,ops:['+','-'],nr:[2,15]},medium:{start:[5,50],steps:5,ops:['+','-','×','÷'],nr:[2,20]},hard:{start:[10,99],steps:6,ops:['+','-','×','÷'],nr:[2,25]}};
+let mcDiff='easy',mcAnswer=0,mcStreak=0,mcChecked=false;
+function mcSetDiff(d,el){document.querySelectorAll('#frame-mathchain .diff-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');mcDiff=d;mcNew();}
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function mcNew(){mcChecked=false;const cfg=MC_CFG[mcDiff];const cont=document.getElementById('mc-steps');cont.innerHTML='';document.getElementById('mc-ans').value='';document.getElementById('mc-fb').style.display='none';document.getElementById('mc-ans').style.borderColor='';let val=rnd(cfg.start[0],cfg.start[1]);const sd=document.createElement('div');sd.className='step-start';sd.innerHTML=`start with <strong style="font-size:18px;font-family:monospace;">${val}</strong>`;cont.appendChild(sd);for(let i=0;i<cfg.steps;i++){let op=cfg.ops[Math.floor(Math.random()*cfg.ops.length)],num,nv,att=0;do{att++;num=rnd(cfg.nr[0],cfg.nr[1]);if(op==='÷'){const divs=[];for(let d=2;d<=Math.min(val,cfg.nr[1]);d++)if(val%d===0)divs.push(d);if(divs.length){num=divs[Math.floor(Math.random()*divs.length)];}else{op='+';num=rnd(cfg.nr[0],cfg.nr[1]);}}if(op==='+')nv=val+num;else if(op==='-')nv=val-num;else if(op==='×')nv=val*num;else nv=val/num;}while((nv<=0||!Number.isInteger(nv))&&att<20);if(nv<=0||!Number.isInteger(nv)){op='+';num=rnd(2,10);nv=val+num;}val=nv;const row=document.createElement('div');row.className='step';row.innerHTML=`<div class="step-op">${op}</div><div class="step-num">${num}</div>`;cont.appendChild(row);}mcAnswer=val;document.getElementById('mc-ans').focus();}
+function mcCheck(){if(mcChecked)return;const v=parseInt(document.getElementById('mc-ans').value);const fb=document.getElementById('mc-fb');if(isNaN(v)){fb.style.display='block';fb.className='feedback incorrect';fb.textContent='enter a number first';return;}mcChecked=true;if(v===mcAnswer){mcStreak++;document.getElementById('mc-streak').textContent=mcStreak;fb.style.display='block';fb.className='feedback correct';fb.textContent='correct! answer: '+mcAnswer+' — streak: '+mcStreak;document.getElementById('mc-ans').style.borderColor='#1d9e75';}else{mcStreak=0;document.getElementById('mc-streak').textContent=0;fb.style.display='block';fb.className='feedback incorrect';fb.textContent='not quite — answer: '+mcAnswer;document.getElementById('mc-ans').style.borderColor='#e24b4a';}}
+const CD_LARGE=[25,50,75,100],CD_SMALL=[1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10];
+let cdTarget=0,cdNums=[],cdUsed=[],cdExpr=[],cdCurVal=null,cdSelOp=null;
+function cdShuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function cdNew(){const lp=Math.floor(Math.random()*3);const large=cdShuffle([...CD_LARGE]).slice(0,lp);const small=cdShuffle([...CD_SMALL]).slice(0,6-lp);cdNums=[...large,...small].slice(0,6);cdTarget=rnd(101,999);cdUsed=[];cdExpr=[];cdCurVal=null;cdSelOp=null;document.getElementById('cd-target').textContent=cdTarget;document.getElementById('cd-badge').innerHTML='';document.querySelectorAll('.op-btn').forEach(b=>b.classList.remove('active'));cdRenderNums();cdRenderExpr();}
+function cdRenderNums(){const r=document.getElementById('cd-nums');r.innerHTML='';cdNums.forEach((n,i)=>{const d=document.createElement('div');d.className='cd-tile'+(cdUsed.includes(i)?' used':'');d.textContent=n;d.dataset.i=i;if(!cdUsed.includes(i))d.addEventListener('click',()=>cdSelectNum(i));r.appendChild(d);});}
+function cdRenderExpr(){const b=document.getElementById('cd-expr');if(!cdExpr.length&&cdCurVal===null){b.innerHTML='<span style="color:#aaa;font-size:14px;">click a number to start...</span>';return;}b.innerHTML='';[...cdExpr,...(cdCurVal!==null?[cdCurVal]:[])].forEach(tok=>{const s=document.createElement('span');s.className='cd-tok '+(isNaN(tok)?'':'nt');s.textContent=tok;b.appendChild(s);});}
+function cdSelectNum(i){if(cdUsed.includes(i))return;const n=cdNums[i];if(cdCurVal===null){cdCurVal=n;cdUsed.push(i);}else if(cdSelOp!==null){const a=cdCurVal,b=n,op=cdSelOp;let res;if(op==='+')res=a+b;else if(op==='−')res=a-b;else if(op==='×')res=a*b;else res=a/b;if(!Number.isInteger(res)||res<=0){document.getElementById('cd-expr').style.borderColor='#e24b4a';setTimeout(()=>document.getElementById('cd-expr').style.borderColor='',800);return;}cdExpr.push(a,op,b,'=');cdUsed.push(i);cdCurVal=res;cdSelOp=null;document.querySelectorAll('.op-btn').forEach(b=>b.classList.remove('active'));}cdRenderNums();cdRenderExpr();}
+function cdSelectOp(op){if(cdCurVal===null)return;cdSelOp=op;document.querySelectorAll('.op-btn').forEach(b=>b.classList.remove('active'));const map={'+':'plus','−':'minus','×':'times','÷':'div'};document.getElementById('cd-op-'+map[op]).classList.add('active');}
+function cdCheck(){if(cdCurVal===null)return;const diff=Math.abs(cdCurVal-cdTarget);const b=document.getElementById('cd-badge');if(diff===0)b.innerHTML=`<div class="res-badge exact">exact! you hit ${cdTarget}</div>`;else if(diff<=10)b.innerHTML=`<div class="res-badge close">close — got ${cdCurVal}, ${diff} away</div>`;else b.innerHTML=`<div class="res-badge wrong">got ${cdCurVal}, ${diff} away from ${cdTarget}</div>`;}
+function cdClear(){cdUsed=[];cdExpr=[];cdCurVal=null;cdSelOp=null;document.querySelectorAll('.op-btn').forEach(b=>b.classList.remove('active'));document.getElementById('cd-badge').innerHTML='';cdRenderNums();cdRenderExpr();}
+</script>
+</body>
+</html>
